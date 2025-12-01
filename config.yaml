@@ -1,0 +1,18 @@
+llm:
+  provider: "generic-http"
+  model_name: "deepseek-chat"
+  endpoint: "https://api.deepseek.com/chat/completions"
+  api_key: "sk-b6d849b9b72140279f51b107a4a64be6"
+  headers:
+    "Authorization": "Bearer sk-b6d849b9b72140279f51b107a4a64be6"
+
+tools:
+  plugin_dir: "./tools"
+
+tasks:
+  - name: "code-generation"
+    description: "For code tasks"
+    system_prompt: "You are a coding assistant."
+  - name: "general-question"
+    description: "For general questions"
+    system_prompt: "You are a helpful assistant."

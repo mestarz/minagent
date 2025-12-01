@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# A simple example tool to demonstrate MinAgent's tool calling capability.
+
+# Check for the --schema argument
+if [[ "$1" == "--schema" ]]; then
+  cat <<EOF
+{
+  "name": "my-tool",
+  "description": "A simple example tool that returns a greeting.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The name to greet."
+      }
+    },
+    "required": ["name"]
+  }
+}
+EOF
+  exit 0
+fi
+
+# Otherwise, assume it's being executed by the agent
+# Read arguments from stdin (usually JSON from the model)
+ARGS=$(cat /dev/stdin)
+
+# Parse the name argument from JSON
+NAME=$(echo "$ARGS" | jq -r '.name // "World"')
+
+echo "Hello, $NAME! This is a response from my-tool. The current time is $(date)."

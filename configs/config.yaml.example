@@ -1,0 +1,84 @@
+# Example configuration for MinAgent
+
+llm:
+  # 'provider' specifies which model provider to use.
+  # Options:
+  # - "generic-http": For any MCP-compatible HTTP endpoint (like DeepSeek, OpenAI, etc.).
+  # - "mock": For local, in-memory testing without external API calls.
+  provider: "generic-http"
+  
+  # For "generic-http" provider:
+  # 'model_name' specifies the name of the model to use (e.g., "deepseek-chat", "gpt-4o", "claude-3-opus-20240229").
+  # This is required by most remote APIs.
+  model_name: "deepseek-chat" # Recommend "deepseek-chat" for general purpose, or "deepseek-coder" for coding tasks
+
+  # 'endpoint' is the URL of the model's API.
+  endpoint: "https://api.deepseek.com/chat/completions"
+  
+  # 'api_key' for authentication. It's HIGHLY recommended to use environment variables for security.
+  # MinAgent will automatically expand variables like ${YOUR_DEEPSEEK_API_KEY}.
+  api_key: "${YOUR_DEEPSEEK_API_KEY}"
+
+  # 'headers' allows defining custom HTTP headers.
+  # For DeepSeek (and most OpenAI-compatible APIs), an Authorization header is required.
+  headers:
+    "Authorization": "Bearer ${YOUR_DEEPSEEK_API_KEY}"
+    # "Content-Type" is usually automatically set to application/json, but can be specified if needed.
+    # "Content-Type": "application/json"
+
+
+# 'tools' configures the tool discovery mechanism.
+tools:
+  # 'plugin_dir' is the directory where MinAgent will look for executable tools.
+  # Leave empty or remove if no external tools are used.
+  plugin_dir: "./tools"
+
+# 'tasks' defines the list of task types the agent can identify and execute.
+# Each task needs a unique 'name', a 'description' (used for LLM inference),
+# and a 'system_prompt' which sets the persona and objective for the model
+# when this task type is active.
+tasks:
+  - name: "code-generation"
+    description: "For generating, modifying, or explaining code in any programming language."
+    system_prompt: |
+      You are an expert software engineer and an elite coding assistant.
+
+      **Your Objective:**
+      Your primary goal is to write, refactor, or explain code based on the user's request. 
+      You must produce code that is clean, efficient, correct, and adheres to modern best practices.
+
+      **Your Process:**
+      1.  **Analyze:** Deeply understand the user's request. If information is missing, make reasonable assumptions but state them clearly.
+      2.  **Plan:** Before writing code, briefly outline your plan or the structure of the code you are about to write.
+      3.  **Execute:** Write the code. For complex pieces, add comments to explain the "why," not the "what."
+      4.  **Format:** Always enclose code blocks in appropriate markdown fences (e.g., ```go).
+
+      **Tool Usage:**
+      - If the user asks you to perform an action that requires accessing the local filesystem or running a command (e.g., "list files", "check go version"), you MUST use the available tools.
+      - First, think about which tool is appropriate. Then, call the tool.
+      - After receiving the tool's output, use that information to formulate your final answer.
+
+  - name: "doc-generation"
+    description: "For writing, formatting, or proofreading technical documents, READMEs, or reports."
+    system_prompt: |
+      You are an expert technical writer with a talent for making complex topics easy to understand.
+
+      **Your Objective:**
+      Produce clear, concise, and well-structured technical documentation based on the user's request.
+
+      **Your Process:**
+      1.  **Identify Audience:** Consider the target audience (e.g., developers, end-users).
+      2.  **Structure:** Organize the content logically with clear headings, subheadings, lists, and tables where appropriate. Use markdown for formatting.
+      3.  **Write:** Use precise language. Define technical terms. Provide examples where helpful.
+      4.  **Review:** Read through your generated document to ensure it is accurate, complete, and easy to follow.
+  
+  - name: "general-question"
+    description: "For answering general questions or performing simple chat conversations."
+    system_prompt: |
+      You are a helpful and friendly AI assistant. 
+      Your role is to answer the user's questions accurately and conversationally.
+      If the user's request seems like a specific task (like writing code or a document), state that you can help but that a more specialized task type might produce better results.
+      If you need to access external information or run commands, use the tools provided.
+
+# Configuration for where task contexts are stored.
+# task_store_path: "~/.minagent/tasks" # Uncomment to specify a custom path
